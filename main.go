@@ -28,6 +28,7 @@ func init() {
     Endpoint: google.Endpoint,
   }
 }
+
 func main() {
   http.HandleFunc("/", handleMain)
   http.HandleFunc("/login", handleGoogleLogin)
@@ -36,8 +37,6 @@ func main() {
 
   log.Println("Started running on http://localhost:8080")
   log.Fatal(http.ListenAndServe(":8080", nil))
-  ctx := context.Background()
-  fmt.Println(ctx)
 }
 
 func handleMain(w http.ResponseWriter, r *http.Request) {
