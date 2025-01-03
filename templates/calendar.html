@@ -7,6 +7,10 @@
 </head>
 <body>
     <h1>Google Calendar Entry Counter</h1>
-    <a href="/login">Login with Google</a>
+    <p>Number of entries in the selected calendar: {{.EventCount}}</p>
+    <a href="/">Back to Calendar Selection</a>
+    <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Calendar Entry Counter</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Google Calendar Entry Counter</h1>
+    <form action="/select-calendar" method="POST">
+        <label for="calendar">Select a Calendar:</label>
+        <select name="calendarId" id="calendar">
+            {{range .Calendars}}
+            <option value="{{.Id}}">{{.Summary}}</option>
+            {{end}}
+        </select>
+        <button type="submit">Count Events</button>
+    </form>
+    <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>
