@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
     "context"
     "html/template"
     "log"
@@ -11,6 +12,7 @@ import (
     "golang.org/x/oauth2/google"
     "google.golang.org/api/calendar/v3"
     "google.golang.org/api/option"
+    "google.golang.org/api/googleapi"
 )
 
 var (
@@ -19,6 +21,7 @@ var (
 )
 
 func init() {
+    fmt.Println("initializing")
     googleOauthConfig = &oauth2.Config{
         RedirectURL:  "http://localhost:8080/callback",
         ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
@@ -45,14 +48,16 @@ func handleMain(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("oauth_token")
     if err != nil || cookie.Value == "" {
         // Not logged in, show login page
+        fmt.Println("not logged in")
         t, _ := template.ParseFiles("templates/index.html")
         t.Execute(w, nil)
         return
     }
 
-    // Logged in, fetch the list of calendars
+    // Decode the token to check its expiration time
     token := &oauth2.Token{AccessToken: cookie.Value}
     client := googleOauthConfig.Client(context.Background(), token)
+
     srv, err := calendar.NewService(context.Background(), option.WithHTTPClient(client))
     if err != nil {
         log.Fatalf("Unable to retrieve Calendar client: %v", err)
@@ -60,6 +65,12 @@ func handleMain(w http.ResponseWriter, r *http.Request) {
 
     calendarList, err := srv.CalendarList.List().Do()
     if err != nil {
+        // Check if the error is due to an invalid token
+        if isAuthError(err) {
+            // Token is invalid, redirect to login
+            http.Redirect(w, r, "/login", http.StatusFound)
+            return
+        }
         log.Fatalf("Unable to retrieve calendar list: %v", err)
     }
 
@@ -71,6 +82,19 @@ func handleMain(w http.ResponseWriter, r *http.Request) {
 
     t, _ := template.ParseFiles("templates/main.html")
     t.Execute(w, data)
+}
+
+func isAuthError(err error) bool {
+    apiErr, ok := err.(*googleapi.Error)
+    if !ok {
+        return false
+    }
+    for _, e := range apiErr.Errors {
+        if e.Reason == "authError" {
+            return true
+        }
+    }
+    return false
 }
 
 func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
