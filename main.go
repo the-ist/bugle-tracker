@@ -23,7 +23,7 @@ var (
 func init() {
     fmt.Println("initializing")
     googleOauthConfig = &oauth2.Config{
-        RedirectURL:  "http://localhost:8080/callback",
+        RedirectURL:  "http://localhost:10000/callback",
         ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
         ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
         Scopes:       []string{calendar.CalendarReadonlyScope},
@@ -32,6 +32,10 @@ func init() {
 }
 
 func main() {
+    port := "10000"
+    if val, ok := os.LookupEnv("PORT"); ok {
+      port = val
+  }
     http.HandleFunc("/", handleMain)
     http.HandleFunc("/login", handleGoogleLogin)
     http.HandleFunc("/callback", handleGoogleCallback)
@@ -39,8 +43,10 @@ func main() {
     http.HandleFunc("/select-calendar", handleSelectCalendar)
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-    log.Println("Started running on http://localhost:8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    log.Println("Started running on http://localhost:10000")
+    if err := http.ListenAndServe("0.0.0.0:"+port, nil); err != nil {
+    log.Fatalf("Could not start server: %s\n", err.Error())
+  }
 }
 
 func handleMain(w http.ResponseWriter, r *http.Request) {
