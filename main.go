@@ -23,7 +23,7 @@ var (
 func init() {
     fmt.Println("initializing")
     googleOauthConfig = &oauth2.Config{
-        RedirectURL:  "http://localhost:10000/callback",
+        RedirectURL:  "https://bugle-tracker.onrender.com/callback",
         ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
         ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
         Scopes:       []string{calendar.CalendarReadonlyScope},
@@ -43,7 +43,7 @@ func main() {
     http.HandleFunc("/select-calendar", handleSelectCalendar)
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-    log.Println("Started running on http://localhost:10000")
+    log.Println("Started running on port 10000")
     if err := http.ListenAndServe("0.0.0.0:"+port, nil); err != nil {
     log.Fatalf("Could not start server: %s\n", err.Error())
   }
